@@ -131,7 +131,7 @@ random_level(void)
         return level > MAX_LEVEL ? MAX_LEVEL : level;
 }
 
-static int 
+static struct skipnode *
 skiplist_search(struct skiplist *list, int key)
 {
         int i = list->level - 1;
@@ -143,7 +143,7 @@ skiplist_search(struct skiplist *list, int key)
                 skiplist_foreach(pos, end) {
                         struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
                         if (node->key == key) {
-                                return node->value;
+                                return node;
                         } else if (node->key > key) {
                                 end = &node->link[i];
                                 break;
@@ -154,11 +154,11 @@ skiplist_search(struct skiplist *list, int key)
                 end--;
         }
 
-        return -1;
+        return NULL;
 }
 
-static void
-skiplist_add(struct skiplist *list, int key, int value)
+static struct skipnode *
+skiplist_insert(struct skiplist *list, int key, int value)
 {
         int level = random_level();
         if (level > list->level) {
@@ -166,33 +166,31 @@ skiplist_add(struct skiplist *list, int key, int value)
         }
 
         struct skipnode *node = skipnode_new(level, key, value);
-        if (node == NULL) {
-                return;
-        }
+        if (node != NULL) {
+                int i = list->level - 1;
+                struct sk_link *pos = &list->head[i];
+                struct sk_link *end = &list->head[i];
 
-        int i = list->level - 1;
-        struct sk_link *pos = &list->head[i];
-        struct sk_link *end = &list->head[i];
-
-        for (; i >= 0; i--) {
-                struct skipnode *nd;
-                pos = pos->next;
-                skiplist_foreach(pos, end) {
-                        nd = list_entry(pos, struct skipnode, link[i]);
-                        if (nd->key >= key) {
-                                end = &nd->link[i];
-                                break;
+                for (; i >= 0; i--) {
+                        pos = pos->next;
+                        skiplist_foreach(pos, end) {
+                                struct skipnode *nd = list_entry(pos, struct skipnode, link[i]);
+                                if (nd->key >= key) {
+                                        end = &nd->link[i];
+                                        break;
+                                }
                         }
+                        pos = end->prev;
+                        if (i < level) {
+                                __list_add(&node->link[i], pos, end);
+                        }
+                        pos--;
+                        end--;
                 }
-                pos = end->prev;
-                if (i < level) {
-                        __list_add(&node->link[i], pos, end);
-                }
-                pos--;
-                end--;
-        }
 
-        list->count++;
+                list->count++;
+        }
+        return node;
 }
 
 static void
