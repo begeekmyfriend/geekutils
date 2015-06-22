@@ -4,10 +4,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "skiplist.h"
 
 #define N 1024 * 1024
+// #define SKIPLIST_DEBUG
 
 int
 main(void)
