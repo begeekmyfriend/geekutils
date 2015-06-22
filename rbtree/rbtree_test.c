@@ -8,13 +8,14 @@
 
 #include "rbtree.h"
 
-#define N 1024 * 1024
+#define N 2 * 1024 * 1024
 // #define RBTREE_DEBUG
 
 int
 main(void)
 {
         int i, *key;
+        struct timeval start, end;
         struct rbtree tree;
         struct rbnode sentinel, *min, *max, *node;
 
@@ -28,6 +29,7 @@ main(void)
         /* Insert test */
         printf("Add %d nodes...\n", N);
         srandom(time(NULL));
+        gettimeofday(&start, NULL);
         for (i = 0; i < N; i++) {
                 struct rbnode *n = malloc(sizeof(*n));
                 if (n == NULL) {
@@ -36,6 +38,8 @@ main(void)
                 n->key = n->data = key[i] = random();
                 rbtree_insert(&tree, n);
         }
+        gettimeofday(&end, NULL);
+        printf("time span:%ld\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
 
         /* Min and max */
         min = rbtree_min(&tree);
@@ -60,20 +64,26 @@ main(void)
 
         /* Search test */
         printf("Search each node...\n");
+        gettimeofday(&start, NULL);
         for (i = 0; i < N; i++) {
                 struct rbnode *n = rbtree_search(&tree, key[i]);
 #ifdef RBTREE_DEBUG
                 printf("key:0x%08x value:0x%08x\n", n->key, n->data);
 #endif
         }
+        gettimeofday(&end, NULL);
+        printf("time span:%ld\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
 
         /* Remove test */
         printf("Remove all nodes...\n");
+        gettimeofday(&start, NULL);
         for (i = 0; i < N; i++) {
                 struct rbnode *n = rbtree_search(&tree, key[i]);
                 rbtree_delete(&tree, n);
                 free(n);
         }
+        gettimeofday(&end, NULL);
+        printf("time span:%ld\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
 
         return 0;
 }
