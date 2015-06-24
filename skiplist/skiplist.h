@@ -137,17 +137,19 @@ skiplist_search(struct skiplist *list, int key)
         int i = list->level - 1;
         struct sk_link *pos = &list->head[i];
         struct sk_link *end = &list->head[i];
+        struct skipnode *node;
 
         for (; i >= 0; i--) {
                 pos = pos->next;
                 skiplist_foreach(pos, end) {
-                        struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
-                        if (node->key == key) {
-                                return node;
-                        } else if (node->key > key) {
+                        node = list_entry(pos, struct skipnode, link[i]);
+                        if (node->key >= key) {
                                 end = &node->link[i];
                                 break;
                         }
+                }
+                if (node->key == key) {
+                        return node;
                 }
                 pos = end->prev;
                 pos--;

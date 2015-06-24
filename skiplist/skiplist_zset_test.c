@@ -50,11 +50,16 @@ main(void)
                 zskiplistNode *zn = zslFirstInRange(zsl, &range);
                 if (zn != NULL) {
 #ifdef SKIPLIST_DEBUG
-                        printf("key:0x%08x value:0x%08x\n", key[i], value);
+                        printf("key:0x%08x\n", zn->score);
 #endif
                 } else {
                         printf("Not found:0x%08x\n", key[i]);
                 }
+#ifdef SKIPLIST_DEBUG
+                printf("key rank:%ld\n", zslGetRank(zsl, key[i]));
+#else
+                zslGetRank(zsl, key[i]);
+#endif
         }
         gettimeofday(&end, NULL);
         printf("time span: %ldms\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
@@ -66,7 +71,7 @@ main(void)
                 zskiplistNode* zn = zslGetElementByRank(zsl, i + 1);
                 if (zn != NULL) {
 #ifdef SKIPLIST_DEBUG
-                        printf("key:0x%08x value:0x%08x\n", key[i], value);
+                        printf("key:0x%08x\n", zn->score);
 #endif
                 } else {
                         printf("Not found:%d\n", i + 1);

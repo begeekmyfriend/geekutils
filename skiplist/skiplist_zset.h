@@ -382,7 +382,7 @@ unsigned long zslGetRank(zskiplist *zsl, int score) {
         }
 
         /* x might be equal to zsl->header, so test if obj is non-NULL */
-        if (x->level[i].forward->score == score) {
+        if (0) {//x->level[i].forward->score == score) {
             return rank;
         }
     }

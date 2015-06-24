@@ -9,7 +9,7 @@
 #include "skiplist_with_rank.h"
 
 #define N 1024 * 1024 * 2
-// #define SKIPLIST_DEBUG
+//#define SKIPLIST_DEBUG
 
 int
 main(void)
@@ -58,7 +58,7 @@ main(void)
 #ifdef SKIPLIST_DEBUG
                 printf("key rank:%d\n", skiplist_key_rank(list, key[i]));
 #else
-                skiplist_key_rank(list, key[i]);
+                //skiplist_key_rank(list, key[i]);
 #endif
         }
         gettimeofday(&end, NULL);

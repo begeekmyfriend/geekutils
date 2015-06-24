@@ -223,6 +223,7 @@ static void
 skiplist_remove(struct skiplist *list, int key)
 {
         int i;
+        struct skipnode *node;
         struct sk_link *pos, *n, *end, *update[MAX_LEVEL];
 
         i = list->level - 1;
@@ -232,13 +233,13 @@ skiplist_remove(struct skiplist *list, int key)
         for (; i >= 0; i--) {
                 pos = pos->next;
                 skiplist_foreach_forward_safe(pos, n, end) {
-                        struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
+                        node = list_entry(pos, struct skipnode, link[i]);
                         if (node->key > key) {
                                 end = &node->link[i];
                                 break;
                         } else if (node->key == key) {
-                                // Here's no break statement because we allow nodes with same key.
                                 __remove(list, node, i + 1, update);
+                                return;
                         }
                 }
                 update[i] = end;
@@ -376,7 +377,6 @@ remove_in_range(struct skiplist *list, struct range_spec *range)
                                 end = &node->link[i];
                                 break;
                         } else if (key_gte_min(node->key, range)) {
-                                /* Here's no break statement because we allow nodes with same key. */
                                 __remove(list, node, i + 1, update);
                                 removed++;
                         }
@@ -438,18 +438,20 @@ skiplist_key_rank(struct skiplist *list, int key)
         int i = list->level - 1;
         struct sk_link *pos = &list->head[i];
         struct sk_link *end = &list->head[i];
+        struct skipnode *node;
 
         for (; i >= 0; i--) {
                 pos = pos->next;
                 skiplist_foreach_forward(pos, end) {
-                        struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
-                        if (node->key > key) {
+                        node = list_entry(pos, struct skipnode, link[i]);
+                        if (node->key >= key) {
                                 end = &node->link[i];
                                 break;
-                        } else if (node->key == key) {
-                                return rank + node->link[i].span;
                         }
                         rank += node->link[i].span;
+                }
+                if (node->key == key) {
+                        return rank + node->link[i].span;
                 }
                 pos = end->prev;
                 pos--;
@@ -466,17 +468,19 @@ skiplist_search_by_key(struct skiplist *list, int key)
         int i = list->level - 1;
         struct sk_link *pos = &list->head[i];
         struct sk_link *end = &list->head[i];
+        struct skipnode *node;
 
         for (; i >= 0; i--) {
                 pos = pos->next;
                 skiplist_foreach_forward(pos, end) {
-                        struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
-                        if (node->key == key) {
-                                return node;
-                        } else if (node->key > key) {
+                        node = list_entry(pos, struct skipnode, link[i]);
+                        if (node->key >= key) {
                                 end = &node->link[i];
                                 break;
                         }
+                }
+                if (node->key == key) {
+                        return node;
                 }
                 pos = end->prev;
                 pos--;
@@ -498,18 +502,20 @@ skiplist_search_by_rank(struct skiplist *list, unsigned int rank)
         unsigned int traversed = 0;
         struct sk_link *pos = &list->head[i];
         struct sk_link *end = &list->head[i];
+        struct skipnode *node;
 
         for (; i >= 0; i--) {
                 pos = pos->next;
                 skiplist_foreach_forward(pos, end) {
-                        struct skipnode *node = list_entry(pos, struct skipnode, link[i]);
-                        if (rank == traversed + node->link[i].span) {
-                                return node;
-                        } else if (traversed + node->link[i].span > rank) {
+                        node = list_entry(pos, struct skipnode, link[i]);
+                        if (traversed + node->link[i].span > rank) {
                                 end = &node->link[i];
                                 break;
                         }
                         traversed += node->link[i].span;
+                }
+                if (rank == traversed) {
+                        return node;
                 }
                 pos = end->prev;
                 pos--;

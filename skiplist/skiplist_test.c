@@ -8,7 +8,7 @@
 
 #include "skiplist.h"
 
-#define N 1024 * 1024
+#define N 2 * 1024 * 1024
 // #define SKIPLIST_DEBUG
 
 int
