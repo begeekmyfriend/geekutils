@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "t_zset.h"
+#include "skiplist_zset.h"
 
 #define N 2 * 1024 * 1024
 // #define SKIPLIST_DEBUG
@@ -41,7 +41,7 @@ main(void)
         printf("time span: %ldms\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
 
         /* Search test 1 */
-        printf("Now search each node...\n");
+        printf("Now search each node by key...\n");
         gettimeofday(&start, NULL);
         for (i = 0; i < N; i++) {
                 zrangespec range;
@@ -60,7 +60,7 @@ main(void)
         printf("time span: %ldms\n", (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)/1000);
 
         /* Search test 2 */
-        printf("Now search each node...\n");
+        printf("Now search each node by rank...\n");
         gettimeofday(&start, NULL);
         for (i = 0; i < N; i++) {
                 zskiplistNode* zn = zslGetElementByRank(zsl, i + 1);
